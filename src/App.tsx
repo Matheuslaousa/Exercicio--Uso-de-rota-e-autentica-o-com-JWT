@@ -1,18 +1,21 @@
-import { Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import ProductPage from './pages/ProductPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Cadastro from './components/Cadastro';
+import Produtos from './components/Produtos';
 
-export default function App() {
+const App = () => {
+  const token = localStorage.getItem('token');
+
   return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/products" element={<ProductPage />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-    </Routes>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/produtos" element={token ? <Produtos /> : <Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
-}
+};
+
+export default App;
