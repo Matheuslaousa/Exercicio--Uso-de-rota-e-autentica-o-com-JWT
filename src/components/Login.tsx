@@ -1,62 +1,58 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, Alert } from '@mui/material';
+import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    const usuarioSalvo = localStorage.getItem('usuario');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (usuarioSalvo) {
-      const { email: emailSalvo, senha: senhaSalva } = JSON.parse(usuarioSalvo);
+    try {
+      const response = await axios.post('https://fakestoreapi.com/auth/login', {
+        username,
+        password
+      });
 
-      if (email === emailSalvo && senha === senhaSalva) {
-        localStorage.setItem('token', 'fake-jwt-token');
-        navigate('/produtos');
+      console.log('Resposta de login:', response.data); // Log da resposta completa para entender o que está vindo
+
+      const token = response.data.token;
+
+      if (token) {
+        console.log('Token gerado:', token);  // Confirma que o token foi recebido
+        localStorage.setItem('token', token);  // Salva o token
+        navigate('/produtos');  // Redireciona para a página de produtos
       } else {
-        setErro('E-mail ou senha incorretos.');
+        setError('Falha ao autenticar');
       }
-    } else {
-      setErro('Usuário não encontrado. Cadastre-se primeiro.');
+    } catch (err: any) {
+      console.error('Erro ao fazer login:', err); // Log do erro
+      setError('Usuário ou senha inválidos');
     }
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" mt={8} width="300px" mx="auto">
-      <Typography variant="h4">Login</Typography>
-
-      {erro && <Alert severity="error" sx={{ mt: 2 }}>{erro}</Alert>}
-
-      <TextField
-        label="E-mail"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        margin="normal"
-        fullWidth
-      />
-
-      <TextField
-        label="Senha"
-        type="password"
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)}
-        margin="normal"
-        fullWidth
-      />
-
-      <Button variant="contained" color="primary" onClick={handleLogin} sx={{ mt: 2 }}>
-        Entrar
-      </Button>
-
-      <Button color="secondary" onClick={() => navigate('/cadastro')} sx={{ mt: 1 }}>
-        Criar Conta
-      </Button>
-    </Box>
+    <div>
+      <form onSubmit={handleLogin}>
+        <input 
+          type="text" 
+          placeholder="Username" 
+          value={username} 
+          onChange={(e) => setUsername(e.target.value)} 
+        />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+        <button type="submit">Login</button>
+      </form>
+      {error && <p>{error}</p>}
+    </div>
   );
 };
 

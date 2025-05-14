@@ -1,75 +1,46 @@
-import React from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-} from '@mui/material';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-interface Produto {
-  nome: string;
-  quantidade: number;
-  cidade: string;
-  valor: number;
-  status: 'Enviado' | 'Não enviado';
-}
-
-const produtos: Produto[] = [
-  { nome: 'Jaqueta', quantidade: 12, cidade: 'São Paulo', valor: 199.90, status: 'Enviado' },
-  { nome: 'Camiseta', quantidade: 25, cidade: 'Rio de Janeiro', valor: 59.90, status: 'Não enviado' },
-  { nome: 'Calça', quantidade: 10, cidade: 'Curitiba', valor: 149.90, status: 'Enviado' },
-  { nome: 'Sapatos', quantidade: 8, cidade: 'Belo Horizonte', valor: 249.90, status: 'Não enviado' },
-];
-
-const Produtos: React.FC = () => {
+const Produtos = () => {
+  const [produtos, setProdutos] = useState<any[]>([]);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+     console.log('Token no localStorage:', token);
+    
+     if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    axios.get('https://fakestoreapi.com/products')
+      .then(response => {
+        setProdutos(response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao buscar produtos:', error);
+      });
+  }, []);
 
   return (
-    <Box mt={8} px={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Produtos</Typography>
-        <Button variant="outlined" color="error" onClick={handleLogout}>
-          Sair
-        </Button>
-      </Box>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><strong>Produto</strong></TableCell>
-              <TableCell><strong>Quantidade</strong></TableCell>
-              <TableCell><strong>Cidade</strong></TableCell>
-              <TableCell><strong>Valor (R$)</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {produtos.map((produto, index) => (
-              <TableRow key={index}>
-                <TableCell>{produto.nome}</TableCell>
-                <TableCell>{produto.quantidade}</TableCell>
-                <TableCell>{produto.cidade}</TableCell>
-                <TableCell>{produto.valor.toFixed(2)}</TableCell>
-                <TableCell>{produto.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+    <div>
+      <h2>Lista de Produtos</h2>
+      {produtos.length === 0 ? (
+        <p>Carregando produtos...</p>
+      ) : (
+        <ul>
+          {produtos.map((produto) => (
+            <li key={produto.id}>
+              <strong>{produto.title}</strong><br />
+              <img src={produto.image} alt={produto.title} width="100" /><br />
+              ${produto.price}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
 
